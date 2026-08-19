@@ -1,0 +1,45 @@
+{
+  "company": "Infosys",
+  "coding_questions": [
+    {
+      "id": "infy_code_1",
+      "title": "Reverse Words in a Sentence",
+      "description": "Given a string S containing words separated by spaces, reverse the order of the words.",
+      "input_example": "hello world from python",
+      "output_example": "python from world hello",
+      "source": "Infosys HackWithInfy 2023"
+    },
+    {
+      "id": "infy_code_2",
+      "title": "Second Largest Element in Array",
+      "description": "Given an array of integers arr, find the second largest element without sorting.",
+      "input_example": "12 35 1 10 34 1",
+      "output_example": "34",
+      "source": "Infosys DSE 2023"
+    },
+    {
+      "id": "infy_code_3",
+      "title": "Single Digit Sum (Digital Root)",
+      "description": "Given a non-negative integer N, repeatedly add all its digits until the result has only one digit.",
+      "input_example": "9875",
+      "output_example": "2",
+      "source": "Infosys SP 2024"
+    },
+    {
+      "id": "infy_code_4",
+      "title": "Find Missing Number in Array",
+      "description": "Given an array of size N-1 containing distinct numbers from 1 to N, find the missing number.",
+      "input_example": "5\\n1 2 4 5",
+      "output_example": "3",
+      "source": "Infosys DSE 2024"
+    },
+    {
+      "id": "infy_code_5",
+      "title": "Longest Substring Without Repeating Characters",
+      "description": "Given a string S, find the length of the longest substring without repeating characters.",
+      "input_example": "abcabcbb",
+      "output_example": "3",
+      "source": "Infosys SP 2023"
+    }
+  ]
+}

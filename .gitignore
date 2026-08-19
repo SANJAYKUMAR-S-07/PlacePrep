@@ -1,0 +1,24 @@
+# Sensitive Environment & Credentials File (NEVER COMMIT TO PUBLIC REPOS)
+.env
+.env.local
+.env.*.local
+
+# Python Virtual Environment & Caches
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary Uploads & Database Caches
+backend/data/*.bin
+backend/data/*.pkl
+rag_cache.pkl
+temp_uploads/
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,45 @@
+{
+  "company": "Wipro",
+  "coding_questions": [
+    {
+      "id": "wipro_code_1",
+      "title": "Anagram Check",
+      "description": "Given two strings s1 and s2, determine if s2 is an anagram of s1.",
+      "input_example": "listen\\nsilent",
+      "output_example": "true",
+      "source": "Wipro NLTH 2023"
+    },
+    {
+      "id": "wipro_code_2",
+      "title": "Find Greatest Common Divisor (GCD)",
+      "description": "Given two non-negative integers a and b, compute their Greatest Common Divisor (GCD).",
+      "input_example": "36 60",
+      "output_example": "12",
+      "source": "Wipro Elite 2023"
+    },
+    {
+      "id": "wipro_code_3",
+      "title": "Armstrong Number Check",
+      "description": "Given a number N, check if it is an Armstrong number (sum of each digit raised to the power of number of digits equals N).",
+      "input_example": "153",
+      "output_example": "true",
+      "source": "Wipro NLTH 2024"
+    },
+    {
+      "id": "wipro_code_4",
+      "title": "Remove Duplicates from Sorted Array",
+      "description": "Given a sorted array of integers arr, remove duplicates in-place such that unique elements appear only once.",
+      "input_example": "1 1 2 2 3",
+      "output_example": "[1, 2, 3]",
+      "source": "Wipro Velocity 2024"
+    },
+    {
+      "id": "wipro_code_5",
+      "title": "Factorial Calculation",
+      "description": "Given an integer N, calculate its factorial N!.",
+      "input_example": "5",
+      "output_example": "120",
+      "source": "Wipro NLTH 2023"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "company": "TCS",
+  "coding_questions": [
+    {
+      "id": "tcs_code_1",
+      "title": "String Palindrome Check",
+      "description": "Given a string S, check whether it is a palindrome. Ignore spaces and case differences.",
+      "input_example": "Radar",
+      "output_example": "true",
+      "source": "TCS NQT 2023"
+    },
+    {
+      "id": "tcs_code_2",
+      "title": "Array Rotation",
+      "description": "Given an integer array arr of size N and a number D, rotate the array to the left by D positions.",
+      "input_example": "5 2\\n1 2 3 4 5",
+      "output_example": "[3, 4, 5, 1, 2]",
+      "source": "TCS Ninja 2023"
+    },
+    {
+      "id": "tcs_code_3",
+      "title": "Prime Number in a Range",
+      "description": "Given two integers L and R, return all prime numbers in the inclusive range [L, R].",
+      "input_example": "2 10",
+      "output_example": "[2, 3, 5, 7]",
+      "source": "TCS Digital 2024"
+    },
+    {
+      "id": "tcs_code_4",
+      "title": "Fibonacci Term Calculation",
+      "description": "Given an integer N, find the N-th term of the Fibonacci sequence (0-indexed: F(0)=0, F(1)=1, F(2)=1, etc.).",
+      "input_example": "7",
+      "output_example": "13",
+      "source": "TCS NQT 2024"
+    },
+    {
+      "id": "tcs_code_5",
+      "title": "Count Vowels and Consonants",
+      "description": "Given a string S, return the count of vowels and consonants as an array [vowels_count, consonants_count].",
+      "input_example": "TCS Digital",
+      "output_example": "[3, 7]",
+      "source": "TCS Digital 2023"
+    }
+  ]
+}

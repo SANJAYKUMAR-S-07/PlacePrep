@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlacePrep - Personalized Placement Prep Copilot</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 1. ASSESSMENT WIZARD LANDING PAGE -->
+    <div id="assessment-wizard-container" class="wizard-overlay">
+        <div class="wizard-card">
+            <div class="wizard-header">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                </div>
+                <h2>PlacePrep Assessment Center</h2>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="wizard-progress-bar">
+                <div class="progress-step active" id="prog-step-1">
+                    <span class="step-num">1</span>
+                    <span class="step-label">Academic Profile</span>
+                </div>
+                <div class="progress-line" id="prog-line-1"></div>
+                <div class="progress-step" id="prog-step-2">
+                    <span class="step-num">2</span>
+                    <span class="step-label">Resume Ingestion</span>
+                </div>
+                <div class="progress-line" id="prog-line-2"></div>
+                <div class="progress-step" id="prog-step-3">
+                    <span class="step-num">3</span>
+                    <span class="step-label">Readiness Report</span>
+                </div>
+            </div>
+
+            <!-- STEP 1: PROFILE FILLING PANE -->
+            <div class="wizard-pane active" id="wizard-pane-1">
+                <h3>Step 1: Set Up Your Profile</h3>
+                <p class="pane-subtitle">Enter your academic standing and technical focus areas.</p>
+                
+                <form id="wizard-profile-form">
+                    <div class="form-row">
+                        <div class="form-group half-width">
+                            <label for="wiz-cgpa">Cumulative CGPA (out of 10)</label>
+                            <input type="number" id="wiz-cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.45" required>
+                        </div>
+                        <div class="form-group half-width">
+                            <label for="wiz-company">Target Company</label>
+                            <select id="wiz-company" required>
+                                <option value="TCS">TCS (Tata Consultancy Services)</option>
+                                <option value="Infosys">Infosys</option>
+                                <option value="Wipro">Wipro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wiz-skills">Core Technical Skills (comma separated)</label>
+                        <input type="text" id="wiz-skills" placeholder="e.g. Java, Data Structures, OOPs, DBMS" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wiz-languages">Interested Job Role</label>
+                        <select id="wiz-languages" required>
+                            <option value="Full Stack Developer">Full Stack Developer</option>
+                            <option value="Data Analyst">Data Analyst</option>
+                            <option value="UI UX Developer">UI UX Developer</option>
+                            <option value="AI ML Engineer">AI ML Engineer</option>
+                            <option value="Software Tester">Software Tester</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="submit-btn wizard-next-btn">Continue to Resume Ingestion</button>
+                </form>
+            </div>
+
+            <!-- STEP 2: RESUME UPLOAD PANE -->
+            <div class="wizard-pane" id="wizard-pane-2">
+                <h3>Step 2: Upload Your Resume</h3>
+                <p class="pane-subtitle">AI will parse your projects and extract descriptions to evaluate engineering depth.</p>
+
+                <div class="resume-drag-zone" id="wiz-drop-zone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="upload-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <p class="drag-title">Drag & drop your Resume file (.pdf, .docx, .txt)</p>
+                    <p class="drag-subtitle">Max size: 5MB</p>
+                    <input type="file" id="wiz-file-input" accept=".pdf,.docx,.txt" style="display: none;">
+                    <button type="button" class="select-file-btn" id="wiz-browse-btn">Browse Files</button>
+                    <div class="selected-file-name" id="wiz-file-display" style="display: none;">No file selected</div>
+                </div>
+
+                <div class="wizard-status" id="wiz-upload-status" style="display: none;"></div>
+
+                <div class="wizard-button-row">
+                    <button type="button" class="select-file-btn prev-btn" id="wiz-prev-btn-2">Back</button>
+                    <button type="button" class="submit-btn" id="wiz-analyze-btn" disabled>Analyze Resume & Start Verification Assessment ➔</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: LIVE SKILL VERIFICATION ASSESSMENT (3 MCQs + 2 CODING PROBLEMS) -->
+            <div class="wizard-pane" id="wizard-pane-assessment">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h3 style="margin:0;">Step 3: Verification Assessment</h3>
+                    <span style="font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; background: rgba(99, 102, 241, 0.2); color: #a78bfa; font-weight: 700; border: 1px solid rgba(99, 102, 241, 0.4);">
+                        🎯 3 MCQs + 2 Programming Problems
+                    </span>
+                </div>
+                <p class="pane-subtitle" id="assessment-pane-subtitle">Questions generated specifically from your parsed resume skills and target role.</p>
+
+                <!-- Loading State -->
+                <div id="assessment-loading-spinner" style="text-align: center; padding: 40px 20px;">
+                    <div class="typing-indicator" style="justify-content: center; margin-bottom: 16px;">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <h4 style="color: #f8fafc; font-size: 1.1rem;">Analyzing Resume Skills & Role...</h4>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Tailoring 3 MCQs and 2 Programming Challenges to verify your claims.</p>
+                </div>
+
+                <!-- Main Assessment Container -->
+                <div id="assessment-main-content" style="display: none;">
+                    <!-- Section A: 3 Multiple Choice Questions -->
+                    <div style="margin-bottom: 24px; padding: 18px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
+                        <h4 style="font-size: 1rem; color: #a78bfa; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span>📝 Part 1: Technical & Core CS MCQs (3 Questions)</span>
+                        </h4>
+                        <div id="assessment-mcq-list" style="display: flex; flex-direction: column; gap: 20px;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Section B: 2 Programming Questions -->
+                    <div style="margin-bottom: 24px; padding: 18px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
+                        <h4 style="font-size: 1rem; color: #38bdf8; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span>💻 Part 2: Practical Programming Assessment (2 Coding Problems)</span>
+                        </h4>
+                        <div id="assessment-coding-list" style="display: flex; flex-direction: column; gap: 24px;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 24px;">
+                        <button type="button" class="submit-btn" id="submit-assessment-btn" style="height: 48px; padding: 0 32px; font-size: 1rem; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);">
+                            Submit Assessment & Unlock Dashboard 🚀
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: SCORE BREAKDOWN & RECOMMENDATIONS PANE -->
+            <div class="wizard-pane" id="wizard-pane-3">
+                <h3>Step 4: Authentic Placement Readiness Report</h3>
+                <p class="pane-subtitle" id="wiz-report-subtitle">Here is your verified readiness scorecard for target company.</p>
+
+                <div class="report-layout">
+                    <!-- Gauge column -->
+                    <div class="report-left">
+                        <div class="circular-gauge-container">
+                            <svg class="progress-ring" width="160" height="160">
+                                <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.03)" stroke-width="12" fill="transparent" r="70" cx="80" cy="80"/>
+                                <circle class="progress-ring__circle" id="overall-ring" stroke="var(--secondary)" stroke-width="12" stroke-linecap="round" fill="transparent" r="70" cx="80" cy="80"/>
+                            </svg>
+                            <div class="gauge-value" id="overall-score-display">0%</div>
+                            <div class="gauge-label">Overall Readiness</div>
+                        </div>
+
+                        <!-- Progress meters -->
+                        <div class="sub-metrics-list">
+                            <div class="sub-metric">
+                                <div class="metric-info">
+                                    <span>Coding Practice</span>
+                                    <span id="metric-coding-val">0%</span>
+                                </div>
+                                <div class="metric-bar-bg"><div class="metric-bar" id="bar-coding" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="sub-metric">
+                                <div class="metric-info">
+                                    <span>Aptitude & Math</span>
+                                    <span id="metric-aptitude-val">0%</span>
+                                </div>
+                                <div class="metric-bar-bg"><div class="metric-bar" id="bar-aptitude" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="sub-metric">
+                                <div class="metric-info">
+                                    <span>Communication & HR</span>
+                                    <span id="metric-comm-val">0%</span>
+                                </div>
+                                <div class="metric-bar-bg"><div class="metric-bar" id="bar-comm" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="sub-metric">
+                                <div class="metric-info">
+                                    <span>Resume Formatting</span>
+                                    <span id="metric-resume-val">0%</span>
+                                </div>
+                                <div class="metric-bar-bg"><div class="metric-bar" id="bar-resume" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="sub-metric">
+                                <div class="metric-info">
+                                    <span>Engineering Projects</span>
+                                    <span id="metric-projects-val">0%</span>
+                                </div>
+                                <div class="metric-bar-bg"><div class="metric-bar" id="bar-projects" style="width: 0%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gaps & Recommendations checklist -->
+                    <div class="report-right">
+                        <div class="analysis-box">
+                            <div class="analysis-title">Recruiter Insights</div>
+                            <p id="wiz-analysis-text">AI is running details against papers database...</p>
+                        </div>
+
+                        <div class="recommendations-box">
+                            <h4>Targeted Prep Recommendations</h4>
+                            <p class="rec-sub">Complete these tasks in your workspace to raise your score:</p>
+                            <ul class="rec-checklist" id="wiz-rec-list">
+                                <!-- Loaded dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="submit-btn workspace-enter-btn" id="enter-workspace-btn">Enter Prep Workspace</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 2. MAIN PREP WORKSPACE CONTAINER -->
+    <div class="app-container" id="workspace-container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+                </div>
+                <h2>PlacePrep<span>RAG</span></h2>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <button class="nav-btn active" data-target="dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-target="chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Chat Assistant</span>
+                </button>
+                <button class="nav-btn" data-target="planner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Study Planner</span>
+                </button>
+                <button class="nav-btn" data-target="resume">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span>Resume Refiner</span>
+                </button>
+                <button class="nav-btn" data-target="mock">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                    <span>Mock Interview</span>
+                </button>
+                <button class="nav-btn" data-target="upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Upload Resources</span>
+                </button>
+                <button class="nav-btn" data-target="coding-practice">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    <span>Coding Practice</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-panel">
+                    <div class="status-item-group">
+                        <div class="status-item">
+                            <span class="status-dot online" id="status-dot"></span>
+                            <span class="status-text" id="status-text">Connecting...</span>
+                        </div>
+                        <div class="footer-actions">
+                            <button class="settings-gear-btn" id="open-settings-btn" title="Configure API Key">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            </button>
+                            <button class="logout-btn" id="sidebar-logout-btn" title="Logout Current User">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <!-- Mobile Menu Hamburger -->
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle" title="Toggle Navigation Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+
+                <div class="header-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" placeholder="Search placement papers, concepts, or queries..." id="global-search">
+                </div>
+                
+                <!-- Readiness Score Header Display Widget -->
+                <div class="header-readiness-widget" id="header-readiness-trigger">
+                    <div class="widget-label" id="header-target-label">Target: TCS</div>
+                    <div class="widget-score-badge" id="header-overall-badge">Readiness: 0%</div>
+                    
+                    <!-- Hover Dropdown detail metrics -->
+                    <div class="widget-dropdown" id="header-score-dropdown">
+                        <div class="dropdown-header">Metric Breakdown</div>
+                        <div class="dropdown-row"><span>Coding:</span><strong id="hd-coding">0%</strong></div>
+                        <div class="dropdown-row"><span>Aptitude:</span><strong id="hd-aptitude">0%</strong></div>
+                        <div class="dropdown-row"><span>Comm & HR:</span><strong id="hd-comm">0%</strong></div>
+                        <div class="dropdown-row"><span>Resume:</span><strong id="hd-resume">0%</strong></div>
+                        <div class="dropdown-row"><span>Projects:</span><strong id="hd-projects">0%</strong></div>
+                        <button class="retake-btn" id="retake-assessment-btn">Retake Assessment</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="dashboard" class="content-section active">
+                <div class="welcome-banner">
+                    <div class="banner-text">
+                        <h1>Accelerate Your Placement Prep</h1>
+                        <p>Search over past papers, interview experiences, and prepare personalized study paths using RAG AI.</p>
+                    </div>
+                    <div class="banner-badge">
+                        <span>Active Companies: 3</span>
+                    </div>
+                </div>
+
+                <!-- API Warning Card on Dashboard -->
+                <div class="api-notice-card" id="dashboard-api-warning" style="display: none;">
+                    <div class="notice-icon">⚠️</div>
+                    <div class="notice-body">
+                        <h4>System is Running in Offline Demo Mode</h4>
+                        <p>To enable complete RAG text generation and vector embeddings, you need a Gemini API Key. Google AI Studio keys are 100% free.</p>
+                    </div>
+                    <button class="notice-action-btn" id="warning-setup-btn">Configure Key</button>
+                </div>
+
+                <!-- Personalized Improvement Dashboard -->
+                <div class="improvement-center" id="dashboard-improvement-center" style="display: none;">
+                    <h2 class="section-title">Your AI-Powered Improvement Plan</h2>
+                    <div class="improvement-grid" id="improvement-cards-container">
+                        <!-- Loaded dynamically based on active scores -->
+                    </div>
+                </div>
+
+                <h2 class="section-title">Explore Target Companies</h2>
+                <div class="companies-grid">
+                    <!-- TCS Card -->
+                    <div class="company-card" data-company="TCS">
+                        <div class="company-header">
+                            <div class="company-logo">TCS</div>
+                            <h3>Tata Consultancy Services</h3>
+                        </div>
+                        <p>Specialized preparation path covering Ninja and Digital roles. Strong focus on Aptitude & basic Coding.</p>
+                        <div class="card-footer">
+                            <span>Ninja & Digital Roles</span>
+                            <button class="card-action-btn">Launch Assistant</button>
+                        </div>
+                    </div>
+                    <!-- Infosys Card -->
+                    <div class="company-card" data-company="Infosys">
+                        <div class="company-header">
+                            <div class="company-logo">INFY</div>
+                            <h3>Infosys</h3>
+                        </div>
+                        <p>Systems Engineer and Specialist Programmer focus. Key topics: Cryptarithmetic, Puzzles, and OOPs.</p>
+                        <div class="card-footer">
+                            <span>SE & SP Roles</span>
+                            <button class="card-action-btn">Launch Assistant</button>
+                        </div>
+                    </div>
+                    <!-- Wipro Card -->
+                    <div class="company-card" data-company="Wipro">
+                        <div class="company-header">
+                            <div class="company-logo">WIP</div>
+                            <h3>Wipro</h3>
+                        </div>
+                        <p>Elite National Talent Hunt syllabus. Focuses on core data structures, sorting, logic, and essay writing.</p>
+                        <div class="card-footer">
+                            <span>Elite NTH Roles</span>
+                            <button class="card-action-btn">Launch Assistant</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-details">
+                    <div class="details-left">
+                        <h3>Frequently Asked Coding Patterns</h3>
+                        <ul class="coding-patterns-list">
+                            <li>
+                                <strong>String Manipulations</strong>
+                                <span class="tag">Repeated in TCS</span>
+                            </li>
+                            <li>
+                                <strong>Array Rotation & Deduplication</strong>
+                                <span class="tag">Repeated in Infosys</span>
+                            </li>
+                            <li>
+                                <strong>Anagram & Palindrome Matching</strong>
+                                <span class="tag">Repeated in Wipro</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="details-right">
+                        <h3>Senior Tips & Placement Advice</h3>
+                        <div class="advice-card">
+                            <p>"Don't skip cryptarithmetic when writing the Infosys test. In interview rounds, your project schema diagram is vital. Know every table link."</p>
+                            <span class="advice-author">— Rohan D., SES @ Infosys</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chat Assistant View -->
+            <section id="chat" class="content-section">
+                <div class="chat-layout">
+                    <div class="chat-feed-container">
+                        <div class="chat-header">
+                            <div class="chat-title">
+                                <h3>PlacePrep RAG Chat</h3>
+                                <p>Generates answers based on official past papers & senior experiences.</p>
+                            </div>
+                            <div class="filter-controls">
+                                <label for="company-filter">Focus Company:</label>
+                                <select id="company-filter">
+                                    <option value="">All Companies</option>
+                                    <option value="TCS">TCS Only</option>
+                                    <option value="Infosys">Infosys Only</option>
+                                    <option value="Wipro">Wipro Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message assistant">
+                                <div class="msg-avatar">AI</div>
+                                <div class="msg-content">
+                                    <p>Hello! Ask me any question about placements, exam patterns, coding questions, or HR answers. I will retrieve context to formulate the answer.</p>
+                                    <div class="chat-suggestions">
+                                        <button class="suggest-btn">What is the recruitment process of Infosys?</button>
+                                        <button class="suggest-btn">Give me TCS coding questions.</button>
+                                        <button class="suggest-btn">Write a SQL query to find second highest salary.</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <form id="chat-form">
+                                <input type="text" id="chat-input" placeholder="Ask your placement query here..." required autocomplete="off">
+                                <button type="submit" id="chat-submit-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Source Panel -->
+                    <div class="chat-sources-panel">
+                        <h3>Retrieved Context Sources</h3>
+                        <p class="sources-intro">Sources retrieved by RAG will appear here to verify citations.</p>
+                        <div class="sources-list" id="sources-list">
+                            <!-- Sources load dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Study Planner View -->
+            <section id="planner" class="content-section">
+                <div class="planner-grid">
+                    <div class="planner-inputs-card">
+                        <h3>Generate Placement Prep Plan</h3>
+                        <p>Fill in your profile details to receive a customized daily learning path.</p>
+                        
+                        <form id="planner-form">
+                            <div class="form-group">
+                                <label for="plan-company">Target Company</label>
+                                <select id="plan-company" required>
+                                    <option value="TCS">TCS</option>
+                                    <option value="Infosys">Infosys</option>
+                                    <option value="Wipro">Wipro</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="plan-days">Available Days</label>
+                                <select id="plan-days" required>
+                                    <option value="7">7 Days</option>
+                                    <option value="10">10 Days</option>
+                                    <option value="15">15 Days</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="plan-skill">Programming Skill Level</label>
+                                <select id="plan-skill" required>
+                                    <option value="Beginner">Beginner (knows basic syntax)</option>
+                                    <option value="Intermediate">Intermediate (solved 50+ problems)</option>
+                                    <option value="Advanced">Advanced (competitive programmer)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="plan-weakness">Weak Area (Needs Focus)</label>
+                                <select id="plan-weakness" required>
+                                    <option value="Aptitude">Quantitative Aptitude</option>
+                                    <option value="Coding">Coding and Data Structures</option>
+                                    <option value="OOP">Object-Oriented Programming (OOP)</option>
+                                    <option value="DBMS">Database & SQL Queries</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="plan-strength">Strong Area</label>
+                                <select id="plan-strength" required>
+                                    <option value="Java">Java Programming</option>
+                                    <option value="Python">Python Programming</option>
+                                    <option value="C++">C++ Programming</option>
+                                    <option value="Aptitude">Quantitative Aptitude</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="submit-btn" id="generate-plan-btn">Generate Plan</button>
+                        </form>
+                    </div>
+
+                    <div class="planner-results-card">
+                        <div class="plan-header">
+                            <h3>Your Personalized Study Plan</h3>
+                            <button id="reset-plan" class="action-btn-small" style="display: none;">Reset Progress</button>
+                        </div>
+                        <div class="plan-content" id="plan-content">
+                            <div class="plan-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                <p>Provide details in the form and click **Generate Plan** to calculate your study checklist.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resume Refiner View -->
+            <section id="resume" class="content-section">
+                <div class="resume-grid">
+                    <div class="resume-input-panel">
+                        <h3>Resume Project Refiner</h3>
+                        <p>Write or paste your current project description from your resume. The AI will align it with the target company's job standards.</p>
+                        
+                        <div class="form-group">
+                            <label for="resume-company">Target Company</label>
+                            <select id="resume-company">
+                                <option value="TCS">TCS</option>
+                                <option value="Infosys">Infosys</option>
+                                <option value="Wipro">Wipro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="resume-role">Target Role</label>
+                            <select id="resume-role">
+                                <option value="Software Engineer">Software Engineer / System Engineer</option>
+                                <option value="Specialist Programmer">Specialist Programmer</option>
+                                <option value="Full Stack Developer">Full Stack Developer</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="resume-bullet">Project Description</label>
+                            <textarea id="resume-bullet" rows="8" placeholder="e.g., I made a library management system in Python and MySQL to keep track of books. Users can issue and return books, and it updates in the database."></textarea>
+                        </div>
+
+                        <button id="refine-resume-btn" class="submit-btn">Enhance Description</button>
+                    </div>
+
+                    <div class="resume-output-panel">
+                        <h3>Enhanced Resume Insights</h3>
+                        <div id="resume-output" class="resume-output-content">
+                            <div class="plan-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <p>Submit your description to generate STAR-oriented bullet points and expected technical questions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mock Interview View -->
+            <section id="mock" class="content-section">
+                <div class="mock-container">
+                    <div class="mock-setup-card" id="mock-setup">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mock-intro-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <h2>Mock Interview Simulator</h2>
+                        <p>Simulate a live technical & HR interview. Choose your target company and toggle Voice Mode to practice speaking.</p>
+                        
+                        <div class="form-group inline-select">
+                            <label for="mock-company">Company Interview Panel:</label>
+                            <select id="mock-company">
+                                <option value="TCS">TCS Panel</option>
+                                <option value="Infosys">Infosys Panel</option>
+                                <option value="Wipro">Wipro Panel</option>
+                            </select>
+                        </div>
+
+                        <div class="voice-setup-option">
+                            <input type="checkbox" id="mock-voice-toggle" checked>
+                            <label for="mock-voice-toggle" class="voice-checkbox-label">
+                                Enable AI Voice Assistant Mode (Hands-free Speech)
+                            </label>
+                        </div>
+
+                        <button id="start-interview-btn" class="start-btn">Start Mock Interview</button>
+                    </div>
+
+                    <div class="mock-chat-card" id="mock-chat-interface" style="display: none;">
+                        <div class="mock-chat-header">
+                            <div class="mock-badge" id="interviewing-panel">TCS Interview Panel</div>
+                            <div class="speech-status-wrapper" id="speech-status-wrapper">
+                                <span class="speech-dot" id="speech-dot"></span>
+                                <span id="mock-speech-indicator">Voice Standby</span>
+                            </div>
+                            <button id="end-interview-btn" class="end-btn-small">End Session</button>
+                        </div>
+                        
+                        <div class="mock-messages" id="mock-messages">
+                            <!-- Messages generated dynamically -->
+                        </div>
+
+                        <div class="mock-input-area">
+                            <form id="mock-form">
+                                <button type="button" class="mic-btn" id="mock-mic-btn" title="Speak Answer">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                                </button>
+                                <input type="text" id="mock-input" placeholder="Type or click microphone to speak..." required autocomplete="off">
+                                <button type="submit" class="send-btn">Submit Answer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upload Resources View -->
+            <section id="upload" class="content-section">
+                <div class="upload-container">
+                    <div class="upload-card">
+                        <h3>Ingest Placement Resources</h3>
+                        <p class="upload-desc">Upload past papers, syllabus lists, senior experience papers, or preparation notes (.pdf, .docx, .txt) to dynamically index them into the RAG database.</p>
+                        
+                        <form id="upload-form">
+                            <div class="form-row">
+                                <div class="form-group half-width">
+                                    <label for="upload-company">Target Company Context</label>
+                                    <select id="upload-company" required>
+                                        <option value="TCS">TCS</option>
+                                        <option value="Infosys">Infosys</option>
+                                        <option value="Wipro">Wipro</option>
+                                        <option value="General">General Technical / Notes</option>
+                                    </select>
+                                </div>
+                                <div class="form-group half-width">
+                                    <label for="upload-type">Resource Classification</label>
+                                    <select id="upload-type" required>
+                                        <option value="pattern">Recruitment Pattern / Syllabus</option>
+                                        <option value="experience">Senior Interview Experience</option>
+                                        <option value="coding">Coding Questions & Answers</option>
+                                        <option value="note">Subject Lecture Note</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="file-drag-zone" id="drop-zone">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <p class="drag-title">Drag & drop your resource file here</p>
+                                <p class="drag-subtitle">Supports PDF, DOCX, or plain TXT files (Max 5MB)</p>
+                                <input type="file" id="file-input" accept=".pdf,.docx,.txt" style="display: none;" required>
+                                <button type="button" class="select-file-btn" id="browse-btn">Browse Files</button>
+                                <div class="selected-file-name" id="file-name-display" style="display: none;">No file chosen</div>
+                            </div>
+
+                            <button type="submit" class="submit-btn" id="upload-submit-btn">Ingest & Embed Resource</button>
+                        </form>
+
+                        <div class="upload-status" id="upload-status" style="display: none;">
+                            <!-- Status gets rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Coding Practice View -->
+            <section id="coding-practice" class="content-section">
+                <div class="coding-workspace-layout">
+                    <!-- Left Column: Question Navigator -->
+                    <div class="coding-sidebar-card">
+                        <h3>Coding Playground</h3>
+                        <p class="playground-subtitle">Choose a placement question to write, compile, and run your solutions.</p>
+                        
+                        <!-- Filters -->
+                        <div class="playground-filters">
+                            <div class="filter-group">
+                                <label for="code-filter-company">Company</label>
+                                <select id="code-filter-company">
+                                    <option value="ALL">All Companies</option>
+                                    <option value="TCS">TCS</option>
+                                    <option value="Infosys">Infosys</option>
+                                    <option value="Wipro">Wipro</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="code-filter-difficulty">Difficulty</label>
+                                <select id="code-filter-difficulty">
+                                    <option value="ALL">All Levels</option>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Question items list -->
+                        <div class="question-list-container" id="code-question-list">
+                            <!-- Items loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Interactive Editor Workspace -->
+                    <div class="coding-workspace-card" id="coding-workspace-card" style="display: none;">
+                        <!-- Question details header -->
+                        <div class="workspace-header">
+                            <div class="workspace-meta">
+                                <span class="company-tag" id="code-question-company">TCS</span>
+                                <span class="difficulty-badge diff-easy" id="code-question-difficulty">Easy</span>
+                            </div>
+                            <h2 id="code-question-title">String Palindrome Check</h2>
+                            <p class="question-source" id="code-question-source">Source: TCS Ninja 2023</p>
+                        </div>
+
+                        <!-- Tabs: Description / Editor -->
+                        <div class="workspace-body">
+                            <div class="question-description-pane">
+                                <h4>Description</h4>
+                                <p id="code-question-desc">Write a program to check if a given string is a palindrome.</p>
+                                
+                                <div class="example-box">
+                                    <strong>Example Input:</strong>
+                                    <pre id="code-question-input">"Radar"</pre>
+                                </div>
+                                <div class="example-box">
+                                    <strong>Example Output:</strong>
+                                    <pre id="code-question-output">true</pre>
+                                </div>
+                            </div>
+
+                            <div class="code-editor-pane">
+                                <div class="editor-header">
+                                    <div class="language-select-wrapper">
+                                        <label for="code-language-select">Language:</label>
+                                        <select id="code-language-select" class="language-dropdown">
+                                            <option value="python">Python 3</option>
+                                            <option value="java">Java 25</option>
+                                            <option value="cpp">C++ (GCC/C++17)</option>
+                                            <option value="c">C (ANSI C)</option>
+                                        </select>
+                                    </div>
+                                    <button class="hint-toggle-btn" id="code-hint-btn">View Hint</button>
+                                </div>
+                                <textarea class="editor-textarea" id="code-editor" placeholder="Write your code here..." spellcheck="false"></textarea>
+                                
+                                <div class="editor-actions">
+                                    <button class="run-code-btn" id="code-run-btn">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="run-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                        Run Test Cases
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test cases results panel -->
+                        <div class="test-results-pane" id="code-results-panel" style="display: none;">
+                            <div class="results-header">
+                                <h3>Test Case Execution Results</h3>
+                                <span class="results-summary-badge" id="code-results-summary">3/5 Passed</span>
+                            </div>
+                            <div id="code-error-message" class="compile-error-box" style="display: none;"></div>
+                            
+                            <table class="results-table" id="code-results-table">
+                                <thead>
+                                    <tr>
+                                        <th>Test Case</th>
+                                        <th>Status</th>
+                                        <th>Inputs</th>
+                                        <th>Expected</th>
+                                        <th>Actual</th>
+                                        <th>Runtime (ms)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="code-results-tbody">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+
+                            <div class="hints-box" id="code-failed-hints-box" style="display: none;">
+                                <h4>💡 Execution Hints & Advice</h4>
+                                <ul id="code-failed-hints-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Idle Screen State -->
+                    <div class="workspace-idle-card" id="coding-idle-card">
+                        <div class="idle-graphic">💻</div>
+                        <h3>Coding Playground</h3>
+                        <p>Select any programming question from the list on the left to start writing and running code.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Settings Modal (Dynamic API Key Configuration) -->
+    <div class="modal-backdrop" id="settings-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Configure LLM Credentials</h3>
+                <button class="close-modal-btn" id="close-settings-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="settings-api-key">Gemini API Key (Free Tier)</label>
+                    <input type="password" id="settings-api-key" placeholder="Paste your API key (starts with AIzaSy)...">
+                    <p class="settings-help">Get a 100% free Gemini API Key in 30 seconds from <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>. This unlocks complete context synthesis, vector embeddings indexing, and intelligent interview flows.</p>
+                </div>
+                <button class="submit-btn" id="save-settings-btn">Apply API Key</button>
+                <div id="settings-status" class="upload-status" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mock Interview 100-Mark Score Card Modal -->
+    <div class="modal-backdrop" id="mock-score-modal" style="display: none;">
+        <div class="modal-content score-modal-content">
+            <div class="modal-header">
+                <h3>📊 Gemini AI Mock Interview Score Card</h3>
+                <button class="close-modal-btn" id="close-score-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="score-card-hero">
+                    <div class="score-badge-circle">
+                        <span id="eval-overall-score">--</span>
+                        <small>/ 100</small>
+                    </div>
+                    <div class="hero-verdict-text">
+                        <h4 id="eval-verdict">Evaluating Candidate...</h4>
+                        <p id="eval-verdict-sub">Comprehensive marks calculated by Gemini AI based on technical answers, speaking skills, and company alignment.</p>
+                    </div>
+                </div>
+
+                <div class="score-breakdown-grid">
+                    <div class="score-bar-item">
+                        <div class="score-bar-label">
+                            <span>🛠️ Technical Answer Accuracy</span>
+                            <strong id="eval-tech-score">-- / 100</strong>
+                        </div>
+                        <div class="bar-track"><div class="bar-fill" id="eval-tech-bar" style="width: 0%;"></div></div>
+                    </div>
+
+                    <div class="score-bar-item">
+                        <div class="score-bar-label">
+                            <span>🎙️ Speaking & Communication Skills</span>
+                            <strong id="eval-comm-score">-- / 100</strong>
+                        </div>
+                        <div class="bar-track"><div class="bar-fill" id="eval-comm-bar" style="width: 0%;"></div></div>
+                    </div>
+
+                    <div class="score-bar-item">
+                        <div class="score-bar-label">
+                            <span>🏢 Company & Role Alignment</span>
+                            <strong id="eval-align-score">-- / 100</strong>
+                        </div>
+                        <div class="bar-track"><div class="bar-fill" id="eval-align-bar" style="width: 0%;"></div></div>
+                    </div>
+                </div>
+
+                <div class="feedback-grid">
+                    <div class="feedback-card strengths-card">
+                        <h4>🌟 Key Strengths</h4>
+                        <ul id="eval-strengths-list"></ul>
+                    </div>
+                    <div class="feedback-card weaknesses-card">
+                        <h4>⚠️ Technical & Communication Mistakes</h4>
+                        <ul id="eval-weaknesses-list"></ul>
+                    </div>
+                    <div class="feedback-card tips-card">
+                        <h4>🚀 Actionable Tips to Improve</h4>
+                        <ul id="eval-tips-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Skill Audit Verification Modal -->
+    <div class="modal-backdrop" id="skill-audit-modal" style="display: none;">
+        <div class="modal-content score-modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <h3>🛡️ Resume Skill Verification Audit</h3>
+                <button class="close-modal-btn" id="close-audit-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="audit-modal-body">
+                <!-- Step 1: Loading / Setup -->
+                <div id="audit-loading-state" style="text-align: center; padding: 40px 20px;">
+                    <div class="typing-indicator" style="justify-content: center; margin-bottom: 16px;">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <h4 style="color: #f8fafc; font-size: 1.1rem;">Analyzing Claimed Resume Skills...</h4>
+                    <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Generating 5 targeted technical audit questions to verify your resume claims.</p>
+                </div>
+
+                <!-- Step 2: Live Test View -->
+                <div id="audit-test-state" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #a78bfa;" id="audit-progress-text">Question 1 of 5</span>
+                        <span style="font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 4px; background: rgba(99, 102, 241, 0.2); color: #818cf8;" id="audit-skill-tag">Skill: OOPs</span>
+                    </div>
+
+                    <h4 id="audit-question-title" style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 20px; line-height: 1.5;">Question text...</h4>
+
+                    <div id="audit-options-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+                        <!-- Options injected dynamically -->
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <button id="audit-next-btn" class="submit-btn" style="height: 40px; padding: 0 24px; font-size: 0.9rem; background: #4f46e5; border-radius: 8px; color: white; font-weight: 600; border: none; cursor: pointer;">
+                            Next Question ➔
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Audit Result View -->
+                <div id="audit-result-state" style="display: none;">
+                    <div class="score-card-hero" style="margin-bottom: 20px;">
+                        <div class="score-badge-circle" id="audit-score-circle">
+                            <span id="audit-score-percent">0%</span>
+                            <small id="audit-score-sub">VERIFIED</small>
+                        </div>
+                        <div class="hero-verdict-text">
+                            <h4 id="audit-result-verdict">Verification Complete</h4>
+                            <p id="audit-result-msg">Audit evaluated successfully.</p>
+                        </div>
+                    </div>
+
+                    <div id="audit-penalty-box" style="padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.5;">
+                        <!-- Dynamic Penalty or Reward Alert -->
+                    </div>
+
+                    <button id="finish-audit-btn" class="submit-btn" style="width: 100%; height: 42px; font-size: 0.9rem; background: #10b981; color: white; font-weight: 700; border-radius: 8px; border: none; cursor: pointer;">
+                        Apply Verification & Update Readiness Score ➔
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js?v=2026.1"></script>
+</body>
+</html>

@@ -26,12 +26,12 @@
             <div class="wizard-progress-bar">
                 <div class="progress-step active" id="prog-step-1">
                     <span class="step-num">1</span>
-                    <span class="step-label">Academic Profile</span>
+                    <span class="step-label">Target Role</span>
                 </div>
                 <div class="progress-line" id="prog-line-1"></div>
                 <div class="progress-step" id="prog-step-2">
                     <span class="step-num">2</span>
-                    <span class="step-label">Resume Ingestion</span>
+                    <span class="step-label">Role Verification</span>
                 </div>
                 <div class="progress-line" id="prog-line-2"></div>
                 <div class="progress-step" id="prog-step-3">
@@ -40,78 +40,43 @@
                 </div>
             </div>
 
-            <!-- STEP 1: PROFILE FILLING PANE -->
+            <!-- STEP 1: STUDENT PROFILE PANE -->
             <div class="wizard-pane active" id="wizard-pane-1">
-                <h3>Step 1: Set Up Your Profile</h3>
-                <p class="pane-subtitle">Enter your academic standing and technical focus areas.</p>
+                <h3>Step 1: Candidate Profile & Target Role</h3>
+                <p class="pane-subtitle">Enter your name and target job role to generate your verification assessment.</p>
                 
                 <form id="wizard-profile-form">
-                    <div class="form-row">
-                        <div class="form-group half-width">
-                            <label for="wiz-cgpa">Cumulative CGPA (out of 10)</label>
-                            <input type="number" id="wiz-cgpa" step="0.01" min="0" max="10" placeholder="e.g. 8.45" required>
-                        </div>
-                        <div class="form-group half-width">
-                            <label for="wiz-company">Target Company</label>
-                            <select id="wiz-company" required>
-                                <option value="TCS">TCS (Tata Consultancy Services)</option>
-                                <option value="Infosys">Infosys</option>
-                                <option value="Wipro">Wipro</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label for="wiz-name">Full Name</label>
+                        <input type="text" id="wiz-name" placeholder="e.g. Sanjay Kumar" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="wiz-skills">Core Technical Skills (comma separated)</label>
-                        <input type="text" id="wiz-skills" placeholder="e.g. Java, Data Structures, OOPs, DBMS" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="wiz-languages">Interested Job Role</label>
-                        <select id="wiz-languages" required>
+                        <label for="wiz-role">Target Job Role</label>
+                        <select id="wiz-role" required>
                             <option value="Full Stack Developer">Full Stack Developer</option>
-                            <option value="Data Analyst">Data Analyst</option>
-                            <option value="UI UX Developer">UI UX Developer</option>
+                            <option value="Backend Developer">Backend Developer</option>
+                            <option value="Frontend Developer">Frontend Developer</option>
+                            <option value="Data Scientist">Data Scientist</option>
                             <option value="AI ML Engineer">AI ML Engineer</option>
-                            <option value="Software Tester">Software Tester</option>
+                            <option value="DevOps Engineer">DevOps Engineer</option>
+                            <option value="Software Engineer">Software Engineer</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="submit-btn wizard-next-btn">Continue to Resume Ingestion</button>
+                    <button type="submit" class="submit-btn wizard-next-btn">Start Role Verification Assessment ➔</button>
                 </form>
             </div>
 
-            <!-- STEP 2: RESUME UPLOAD PANE -->
-            <div class="wizard-pane" id="wizard-pane-2">
-                <h3>Step 2: Upload Your Resume</h3>
-                <p class="pane-subtitle">AI will parse your projects and extract descriptions to evaluate engineering depth.</p>
-
-                <div class="resume-drag-zone" id="wiz-drop-zone">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="upload-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    <p class="drag-title">Drag & drop your Resume file (.pdf, .docx, .txt)</p>
-                    <p class="drag-subtitle">Max size: 5MB</p>
-                    <input type="file" id="wiz-file-input" accept=".pdf,.docx,.txt" style="display: none;">
-                    <button type="button" class="select-file-btn" id="wiz-browse-btn">Browse Files</button>
-                    <div class="selected-file-name" id="wiz-file-display" style="display: none;">No file selected</div>
-                </div>
-
-                <div class="wizard-status" id="wiz-upload-status" style="display: none;"></div>
-
-                <div class="wizard-button-row">
-                    <button type="button" class="select-file-btn prev-btn" id="wiz-prev-btn-2">Back</button>
-                    <button type="button" class="submit-btn" id="wiz-analyze-btn" disabled>Analyze Resume & Start Verification Assessment ➔</button>
-                </div>
-            </div>
-
-            <!-- STEP 3: LIVE SKILL VERIFICATION ASSESSMENT (3 MCQs + 2 CODING PROBLEMS) -->
+            <!-- STEP 2: LIVE ROLE VERIFICATION ASSESSMENT (3 MCQs + 2 CODING PROBLEMS) -->
             <div class="wizard-pane" id="wizard-pane-assessment">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <h3 style="margin:0;">Step 3: Verification Assessment</h3>
+                    <h3 style="margin:0;">Step 2: Role Verification Assessment</h3>
                     <span style="font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; background: rgba(99, 102, 241, 0.2); color: #a78bfa; font-weight: 700; border: 1px solid rgba(99, 102, 241, 0.4);">
                         🎯 3 MCQs + 2 Programming Problems
                     </span>
                 </div>
-                <p class="pane-subtitle" id="assessment-pane-subtitle">Questions generated specifically from your parsed resume skills and target role.</p>
+                <p class="pane-subtitle" id="assessment-pane-subtitle">Questions generated specifically to validate your knowledge for your target job role.</p>.</p>
 
                 <!-- Loading State -->
                 <div id="assessment-loading-spinner" style="text-align: center; padding: 40px 20px;">
@@ -310,7 +275,7 @@
                 
                 <!-- Readiness Score Header Display Widget -->
                 <div class="header-readiness-widget" id="header-readiness-trigger">
-                    <div class="widget-label" id="header-target-label">Target: TCS</div>
+                    <div class="widget-label" id="header-target-label">Role: Full Stack Developer</div>
                     <div class="widget-score-badge" id="header-overall-badge">Readiness: 0%</div>
                     
                     <!-- Hover Dropdown detail metrics -->

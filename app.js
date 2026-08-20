@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
         state.wizStep = stepNum;
 
         // Reset active state & display for all panes
-        [pane1, pane2, paneAssessment, pane3].forEach(p => {
+        [pane1, paneAssessment, pane3].forEach(p => {
             if (p) {
                 p.classList.remove("active");
                 p.style.display = "none";
@@ -179,18 +179,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (stepNum === 1) {
             if (pane1) { pane1.classList.add("active"); pane1.style.display = "block"; }
             progStep1.classList.add("active");
-        } else if (stepNum === 2) {
-            if (pane2) { pane2.classList.add("active"); pane2.style.display = "block"; }
+        } else if (stepNum === "assessment" || stepNum === 2) {
+            if (paneAssessment) { paneAssessment.classList.add("active"); paneAssessment.style.display = "block"; }
             progStep1.classList.add("completed");
             progStep2.classList.add("active");
             progLine1.classList.add("active");
-        } else if (stepNum === "assessment") {
-            if (paneAssessment) { paneAssessment.classList.add("active"); paneAssessment.style.display = "block"; }
-            progStep1.classList.add("completed");
-            progStep2.classList.add("completed");
-            progStep3.classList.add("active");
-            progLine1.classList.add("active");
-            progLine2.classList.add("active");
         } else if (stepNum === 3) {
             if (pane3) { pane3.classList.add("active"); pane3.style.display = "block"; }
             progStep1.classList.add("completed");
@@ -202,17 +195,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* =========================================================================
-       WIZARD STEP 1: ACADEMIC PROFILE FORM SUBMISSION
+       WIZARD STEP 1: CANDIDATE PROFILE FORM SUBMISSION
        ========================================================================= */
     profileForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        state.wizCgpa = parseFloat(document.getElementById("wiz-cgpa").value);
-        state.wizCompany = document.getElementById("wiz-company").value;
-        state.wizSkills = document.getElementById("wiz-skills").value;
-        state.wizLanguages = document.getElementById("wiz-languages").value;
+        const nameInput = document.getElementById("wiz-name");
+        const roleInput = document.getElementById("wiz-role");
 
-        // Transition to step 2 (Resume upload)
-        showWizardPane(2);
+        state.wizName = nameInput ? nameInput.value.trim() : "Candidate";
+        state.wizRole = roleInput ? roleInput.value.trim() : "Full Stack Developer";
+        state.wizLanguages = state.wizRole;
+
+        // Transition directly to Role Verification Assessment
+        showWizardPane("assessment");
+        triggerRoleAssessment();
     });
 
     /* =========================================================================
@@ -361,30 +357,23 @@ document.addEventListener("DOMContentLoaded", () => {
        WIZARD STEP 3: LIVE VERIFICATION ASSESSMENT (3 MCQs + 2 CODING PROBLEMS)
        ========================================================================= */
     wizAnalyzeBtn.addEventListener("click", async () => {
-        wizAnalyzeBtn.disabled = true;
-        wizAnalyzeBtn.innerText = "Analyzing Resume Skills...";
-        
-        // Navigate to Assessment Pane
+    async function triggerRoleAssessment() {
         showWizardPane("assessment");
-        assessmentLoadingSpinner.style.display = "block";
-        assessmentMainContent.style.display = "none";
+        if (assessmentLoadingSpinner) assessmentLoadingSpinner.style.display = "block";
+        if (assessmentMainContent) assessmentMainContent.style.display = "none";
 
-        const skillsList = state.wizSkills ? state.wizSkills.split(",").map(s => s.trim()).filter(Boolean) : ["Python", "Java", "SQL", "OOPs"];
+        const targetRole = state.wizRole || "Full Stack Developer";
 
         try {
             const res = await fetch(`${API_URL}/api/generate-resume-assessment`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    skills: skillsList,
-                    role: state.wizLanguages || "Full Stack Developer",
-                    company: state.wizCompany || "TCS",
-                    projects_summary: state.wizProjects || ""
+                    skills: [targetRole, "Software Engineering"],
+                    role: targetRole,
+                    user_name: state.wizName || "Candidate"
                 })
             });
-
-            wizAnalyzeBtn.disabled = false;
-            wizAnalyzeBtn.innerText = "Analyze Resume & Start Verification Assessment ➔";
 
             if (res.ok) {
                 const data = await res.json();
@@ -394,58 +383,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 renderVerificationAssessment(data);
             } else {
-                generateAssessmentClientSide(skillsList);
+                generateAssessmentClientSide(targetRole);
             }
         } catch (e) {
-            wizAnalyzeBtn.disabled = false;
-            wizAnalyzeBtn.innerText = "Analyze Resume & Start Verification Assessment ➔";
-            generateAssessmentClientSide(skillsList);
+            generateAssessmentClientSide(targetRole);
         }
-    });
+    }
 
-    function generateAssessmentClientSide(skillsList) {
-        const s1 = skillsList[0] || "Python";
-        const s2 = skillsList[1] || "SQL";
-        const role = state.wizLanguages || "Full Stack Developer";
+    if (wizAnalyzeBtn) {
+        wizAnalyzeBtn.addEventListener("click", () => {
+            triggerRoleAssessment();
+        });
+    }
 
-        const mockData = {
-            status: "success",
-            skills: skillsList,
-            role: role,
-            company: state.wizCompany || "TCS",
-            mcqs: [
+    function generateAssessmentClientSide(targetRole) {
+        const role = targetRole || state.wizRole || "Full Stack Developer";
+
+        let mcqs = [];
+        let codingQuestions = [];
+
+        if (role.toLowerCase().includes("full stack")) {
+            mcqs = [
                 {
                     id: "mcq_1",
-                    question: `In ${role} development using ${s1}, what is the primary advantage of encapsulation?`,
+                    question: "In Full Stack Development, what is the primary purpose of RESTful API statelessness?",
                     options: [
-                        "Hiding implementation details and restricting direct access to object attributes.",
-                        "Compiling code directly into hardware assembly instructions.",
-                        "Automatically formatting database query strings.",
-                        "Bypassing all memory allocation restrictions."
+                        "Every client request contains all info needed by the server to fulfill it, improving scalability.",
+                        "Server automatically stores sessions inside static client cookies.",
+                        "API routes bypass database queries completely.",
+                        "Eliminates the need for HTTP status codes."
                     ],
                     correct_option: 0,
-                    skill: s1
+                    skill: "Web Architecture"
                 },
                 {
                     id: "mcq_2",
-                    question: "Which data structure follows a First-In, First-Out (FIFO) access policy?",
-                    options: ["Stack", "Queue", "Binary Search Tree", "Max Heap"],
-                    correct_option: 1,
-                    skill: "Data Structures"
+                    question: "Which HTML5 & JavaScript mechanism allows asynchronous network requests without reloading the page?",
+                    options: ["Web Sockets / Fetch API (AJAX)", "Static HTML Anchors", "CSS Transitions", "Local Domain DNS"],
+                    correct_option: 0,
+                    skill: "Frontend & JS"
                 },
                 {
                     id: "mcq_3",
-                    question: `In SQL queries using ${s2}, which clause filters records after aggregation (GROUP BY)?`,
-                    options: ["WHERE", "HAVING", "ORDER BY", "FILTER"],
-                    correct_option: 1,
-                    skill: s2
+                    question: "In relational database design (SQL), what is the main function of a Foreign Key constraint?",
+                    options: ["Maintains referential integrity between tables.", "Increases CPU clock frequency during sorting.", "Encrypts passwords automatically.", "Deletes duplicate rows in memory."],
+                    correct_option: 0,
+                    skill: "Database & SQL"
                 }
-            ],
-            coding_questions: [
+            ];
+            codingQuestions = [
                 {
-                    id: "tcs_code_1",
-                    title: "String Palindrome Check",
-                    skill: s1,
+                    id: "fs_code_1",
+                    title: "String Palindrome Verification",
+                    skill: "Frontend & Logic",
                     description: "Write a function to check if a given string is a palindrome (reads the same forward and backward, case-insensitive).",
                     func_name: "is_palindrome",
                     starter_code: {
@@ -454,7 +444,66 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 },
                 {
-                    id: "wipro_code_5",
+                    id: "fs_code_2",
+                    title: "Array Factorial Processing",
+                    skill: "Backend & Algorithms",
+                    description: "Write a function that accepts an integer N and returns its factorial (N!). Note: 0! = 1.",
+                    func_name: "factorial",
+                    starter_code: {
+                        python: "def factorial(n: int) -> int:\n    # Write your solution here\n    res = 1\n    for i in range(2, n + 1): res *= i\n    return res\n",
+                        java: "public class Solution {\n    public static int factorial(int n) {\n        int res = 1;\n        for (int i = 2; i <= n; i++) res *= i;\n        return res;\n    }\n}\n"
+                    }
+                }
+            ];
+        } else {
+            // General Software Engineering / Data / DevOps assessment
+            mcqs = [
+                {
+                    id: "mcq_1",
+                    question: `In ${role} development, what is the core benefit of modular component architecture?`,
+                    options: [
+                        "Promotes reusability, maintainability, and isolated testing of system logic.",
+                        "Forces code to execute sequentially on a single thread.",
+                        "Deletes unused files automatically on build.",
+                        "Replaces all database storage with hardcoded constants."
+                    ],
+                    correct_option: 0,
+                    skill: role
+                },
+                {
+                    id: "mcq_2",
+                    question: "Which Data Structure provides O(1) average time complexity for key-value lookups?",
+                    options: ["Hash Table / Dictionary", "Linked List", "Binary Search Tree", "Queue"],
+                    correct_option: 0,
+                    skill: "Data Structures"
+                },
+                {
+                    id: "mcq_3",
+                    question: "What does the ACID acronym stand for in Database Systems?",
+                    options: [
+                        "Atomicity, Consistency, Isolation, Durability",
+                        "Algorithm, Computation, Integrity, Data",
+                        "Asynchronous, Concurrent, Isolated, Distributed",
+                        "Access, Control, Index, Dependency"
+                    ],
+                    correct_option: 0,
+                    skill: "Databases & Systems"
+                }
+            ];
+            codingQuestions = [
+                {
+                    id: "gen_code_1",
+                    title: "String Palindrome Verification",
+                    skill: "Core Algorithms",
+                    description: "Write a function to check if a given string is a palindrome (reads the same forward and backward, case-insensitive).",
+                    func_name: "is_palindrome",
+                    starter_code: {
+                        python: "def is_palindrome(s: str) -> bool:\n    # Write your solution here\n    s = str(s).lower()\n    return s == s[::-1]\n",
+                        java: "public class Solution {\n    public static boolean isPalindrome(String s) {\n        String clean = s.toLowerCase();\n        return new StringBuilder(clean).reverse().toString().equals(clean);\n    }\n}\n"
+                    }
+                },
+                {
+                    id: "gen_code_2",
                     title: "Factorial Calculation",
                     skill: "Math & Logic",
                     description: "Write a function that accepts an integer N and returns its factorial (N!). Note: 0! = 1.",
@@ -464,7 +513,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         java: "public class Solution {\n    public static int factorial(int n) {\n        int res = 1;\n        for (int i = 2; i <= n; i++) res *= i;\n        return res;\n    }\n}\n"
                     }
                 }
-            ]
+            ];
+        }
+
+        const mockData = {
+            status: "success",
+            skills: [role, "Core CS"],
+            role: role,
+            mcqs: mcqs,
+            coding_questions: codingQuestions
         };
 
         currentAssessmentData = mockData;
@@ -713,7 +770,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderReadinessReport(data) {
         const scores = data.scores;
-        document.getElementById("wiz-report-subtitle").innerText = `Here is your readiness scorecard for target company: ${state.wizCompany}`;
+        const candidateName = state.wizName || "Candidate";
+        const candidateRole = state.wizRole || "Full Stack Developer";
+
+        document.getElementById("wiz-report-subtitle").innerText = `Candidate: ${candidateName} | Target Job Role: ${candidateRole}`;
+        if (headerTargetLabel) headerTargetLabel.innerText = `Role: ${candidateRole}`;
 
         // Circular Gauge SVG stroke calculation
         // Radius of circle = 70. Perimeter = 2 * Math.PI * 70 = 439.82

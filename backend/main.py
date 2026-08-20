@@ -508,13 +508,13 @@ class SkillAuditVerifyRequest(BaseModel):
 class ResumeAssessmentRequest(BaseModel):
     skills: List[str] = []
     role: str = "Full Stack Developer"
-    company: str = "TCS"
+    user_name: Optional[str] = "Candidate"
     projects_summary: Optional[str] = ""
 
 class ResumeAssessmentSubmitRequest(BaseModel):
     skills: List[str] = []
     role: str = "Full Stack Developer"
-    company: str = "TCS"
+    user_name: Optional[str] = "Candidate"
     cgpa: float = 7.5
     mcq_answers: Dict[str, int] = {}
     coding_passed_counts: Dict[str, int] = {}
